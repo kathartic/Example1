@@ -1,0 +1,21 @@
+<resources>
+    <!-- login page-->
+    <string name="app_name">Bikeshare</string>
+    <string name="edit_message">Enter your student ID</string>
+    <string name="error_id_length">Please enter your full student id.</string>
+    <string name="button_send">Log in</string>
+
+    <!-- main page -->
+    <string name="welcome_message">What would you like to do today?</string>
+    <string name="return_bike">Return</string>
+
+    <!-- return bike page -->
+    <string name="return_where">Where are you returning?</string>
+    <string name="return_now">Return now?</string>
+    <string name="return_confirmed">fk this bike</string>
+    <string-array name="return_locations">
+        <item>Home</item>
+    </string-array>
+    <string name="return_server_error">There was an error communicating with the server. Please try again.</string>
+    <string name="return_success">You have 10 seconds.</string>
+</resources>
