@@ -16,13 +16,8 @@ import org.eclipse.paho.client.mqttv3.IMqttToken;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
-import java.io.UnsupportedEncodingException;
-
 interface ReturnBikeConstants {
-    public static final String hostName = "tcp://130.58.167.93:1883";
-    public static final String topicName = "outTopic";
     public static final String clientId = MqttClient.generateClientId();
-    public static final int qos = 2;
 }
 
 public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeConstants {
@@ -56,7 +51,7 @@ public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeC
     public void returnBike(View view) {
         // TODO: use mqtt protocol to return the bike.
         final MqttAndroidClient client =
-                new MqttAndroidClient(this.getApplicationContext(), ReturnBikeConstants.hostName,
+                new MqttAndroidClient(this.getApplicationContext(), Constants.HOSTNAME,
                         ReturnBikeConstants.clientId);
         try {
             IMqttToken token = client.connect(); // completes async, so need to set a cb
@@ -74,12 +69,6 @@ public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeC
                 }
             });
 
-            // does this need to be async too????
-            // TODO: how to make a successful disconnect?
-            if(client.isConnected()) {
-                client.disconnect();
-                client.unregisterResources();
-            }
         } catch (MqttException e) {
             e.printStackTrace();
             TextView returnErrorMsg = findViewById(R.id.return_server_error);
@@ -88,13 +77,12 @@ public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeC
     }
 
     private void publishReturn(MqttAndroidClient client) {
-        String bike = "bike";
+        // TODO: we should publish the return based on which location was selected.
+        String topicName = "bikeshare/1";
         try {
-            byte[] payload = bike.getBytes("UTF-8");
-
             // qos = 2 ensures delivery (slow), retained --> broker will retain it
-            IMqttDeliveryToken token = client.publish(ReturnBikeConstants.topicName,
-                    payload, ReturnBikeConstants.qos, true);
+            IMqttDeliveryToken token = client.publish(topicName,
+                    Constants.LOCK, Constants.QOS, true);
             token.setActionCallback(new IMqttActionListener() { // tokens are async, so set cb
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
@@ -108,7 +96,7 @@ public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeC
                     returnErrorMsg.setVisibility(View.VISIBLE);
                 }
             });
-        } catch (MqttException | UnsupportedEncodingException e) {
+        } catch (MqttException e) {
             e.printStackTrace();
             TextView returnErrorMsg = findViewById(R.id.return_server_error);
             returnErrorMsg.setVisibility(View.VISIBLE);

@@ -8,6 +8,7 @@
     <!-- main page -->
     <string name="welcome_message">What would you like to do today?</string>
     <string name="return_bike">Return</string>
+    <string name="reserve_bike">Reserve</string>
 
     <!-- return bike page -->
     <string name="return_where">Where are you returning?</string>
@@ -18,4 +19,7 @@
     </string-array>
     <string name="return_server_error">There was an error communicating with the server. Please try again.</string>
     <string name="return_success">You have 10 seconds.</string>
+
+    <!-- reserve bike page -->
+    <string name="reserve_where">Where would you like to reserve a bike?</string>
 </resources>

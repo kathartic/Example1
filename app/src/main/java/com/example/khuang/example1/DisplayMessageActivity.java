@@ -27,4 +27,10 @@ public class DisplayMessageActivity extends AppCompatActivity {
         // intent.putExtra(EXTRA_MESSAGE, message);
         startActivity(intent);
     }
+
+    public void reserveBike(View view) {
+        Intent intent = new Intent(this, ReserveBikeActivity.class);
+        // intent.putExtra(EXTRA_MESSAGE, message);
+        startActivity(intent);
+    }
 }
