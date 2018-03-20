@@ -12,8 +12,7 @@
 
     <!-- return bike page -->
     <string name="return_where">Where are you returning?</string>
-    <string name="return_now">Return now?</string>
-    <string name="return_confirmed">fk this bike</string>
+    <string name="return_confirmed">Return now</string>
     <string-array name="return_locations">
         <item>Home</item>
     </string-array>
@@ -21,5 +20,9 @@
     <string name="return_success">You have 10 seconds.</string>
 
     <!-- reserve bike page -->
-    <string name="reserve_where">Where would you like to reserve a bike?</string>
+    <string name="reserve_where">Where would you like to check out a bike?</string>
+    <string-array name="reserve_locations">
+        <item>Mary Lyons 1</item>
+    </string-array>
+    <string name="reserve_now">Check out now</string>
 </resources>

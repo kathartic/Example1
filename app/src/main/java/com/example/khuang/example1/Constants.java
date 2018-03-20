@@ -15,4 +15,6 @@ public final class Constants {
     public static final byte[] QUERY = {0};
     public static final byte[] UNLOCK = {1};
     public static final byte[] LOCK = {2};
+
+
 }

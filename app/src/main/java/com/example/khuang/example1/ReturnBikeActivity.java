@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
@@ -21,6 +22,7 @@ interface ReturnBikeConstants {
 }
 
 public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeConstants {
+    MqttAndroidClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,10 @@ public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeC
         TextView textView = findViewById(R.id.bike_time_remaining);
         textView.setText(message);
 
+        // create client
+        client = new MqttAndroidClient(this.getApplicationContext(), Constants.HOSTNAME,
+                ReturnBikeConstants.clientId); // create a new client when you open this page.
+
         // create a dropdown
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
@@ -41,34 +47,45 @@ public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeC
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.return_locations, android.R.layout.simple_spinner_item);
 
+        // create ArrayAdapter by querying all open locations. TODO: do this w/ DB.
+
         // Specify the layout to use when the list of choices appears
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         // Apply the adapter to the spinner
         spinner.setAdapter(adapter);
+        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                // adapterView.getItemAtPosition(i) should give you the thing user selected.
+                Object obj  = adapterView.getItemAtPosition(i);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // do nothing?
+            }
+        });
     }
+
+    IMqttActionListener publishAction = new IMqttActionListener() {
+        @Override
+        public void onSuccess(IMqttToken asyncActionToken) {
+            if (client.isConnected()) { publishReturn(client); }
+        }
+
+        @Override
+        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+            TextView returnErrorMsg = findViewById(R.id.return_server_error);
+            returnErrorMsg.setVisibility(View.VISIBLE);
+        }
+    };
 
     public void returnBike(View view) {
         // TODO: use mqtt protocol to return the bike.
-        final MqttAndroidClient client =
-                new MqttAndroidClient(this.getApplicationContext(), Constants.HOSTNAME,
-                        ReturnBikeConstants.clientId);
         try {
             IMqttToken token = client.connect(); // completes async, so need to set a cb
-            token.setActionCallback(new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) { // connection okay
-                    if (client.isConnected()) { publishReturn(client); }
-                }
-
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                    // Something went wrong e.g. connection timeout or firewall problems
-                    TextView returnErrorMsg = findViewById(R.id.return_server_error);
-                    returnErrorMsg.setVisibility(View.VISIBLE);
-                }
-            });
-
+            token.setActionCallback(publishAction);
         } catch (MqttException e) {
             e.printStackTrace();
             TextView returnErrorMsg = findViewById(R.id.return_server_error);
@@ -101,5 +118,35 @@ public class ReturnBikeActivity extends AppCompatActivity implements ReturnBikeC
             TextView returnErrorMsg = findViewById(R.id.return_server_error);
             returnErrorMsg.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void queryControllersWrapper() {
+        try {
+            if (!client.isConnected()) {
+                IMqttToken token = client.connect(); // completes async, so need to set a cb
+                token.setActionCallback(new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken) {
+                        if (client.isConnected()) { queryControllers(); }
+                    }
+
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                        TextView returnErrorMsg = findViewById(R.id.return_server_error);
+                        returnErrorMsg.setVisibility(View.VISIBLE);
+                    }
+                });
+            } else {
+                queryControllers();
+            }
+        } catch (MqttException e) {
+            e.printStackTrace();
+            TextView returnErrorMsg = findViewById(R.id.return_server_error);
+            returnErrorMsg.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void queryControllers() {
+
     }
 }
