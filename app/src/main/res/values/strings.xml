@@ -14,16 +14,13 @@
     <!-- return bike page -->
     <string name="return_where">Where are you returning?</string>
     <string name="return_confirmed">Return now</string>
-    <string-array name="return_locations">
-        <item>Home</item>
-    </string-array>
     <string name="return_server_error">There was an error communicating with the server. Please try again.</string>
     <string name="return_success">You have 10 seconds to return the bike. This screen will now close.</string>
 
     <!-- reserve bike page -->
     <string name="reserve_where">Where would you like to check out a bike?</string>
-    <string-array name="reserve_locations">
-        <item>Mary Lyons 1</item>
-    </string-array>
     <string name="reserve_now">Check out now</string>
+    <string name="reserve_success">The lock will unlock for 10 seconds. This screen will now close.</string>
+    <string name="reserve_failure">There is an error with the database. Please try later.</string>
+    <string name="reserve_failure_mqtt">There is an error with the network. Please try again later.</string>
 </resources>

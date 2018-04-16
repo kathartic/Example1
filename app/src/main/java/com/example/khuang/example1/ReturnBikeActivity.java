@@ -1,6 +1,5 @@
 package com.example.khuang.example1;
 
-import android.content.Intent;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
@@ -33,16 +32,12 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
     private StitchClient stitchClient;
     private final String clientId = MqttClient.generateClientId();
     private Object itemSelected = null;
-    private static String userId = "";
     private User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_return_bike);
-
-        Intent intent = getIntent();
-        userId = intent.getStringExtra(Constants.EXTRA_MESSAGE);
 
         this.user = User.getUser(); // TODO: what if this is null, asshole?
 
@@ -73,21 +68,41 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            try {
+                IMqttToken token = this.mqttClient.disconnect();
+                token.setActionCallback(new IMqttActionListener() {
+                    @Override
+                    public void onSuccess(IMqttToken asyncActionToken) {
+                        closeMqttClient();
+                        finish();
+                    }
+
+                    @Override
+                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                        finish();
+                    }
+                });
+            } catch( MqttException e) {
+                finish();
+            }
+
+
             finish(); // do this to preserve the userId from prev screen.
         }
         return true;
     }
 
+    private void closeMqttClient() { this.mqttClient.close(); }
+
     private void getLocations() {
-        this.stitchClient.executeFunction("queryLocs", "0").addOnCompleteListener(new OnCompleteListener<Object>() {
+        this.stitchClient.executeFunction("queryEmptyLocs", "0").addOnCompleteListener(new OnCompleteListener<Object>() {
             @Override
             public void onComplete(@NonNull Task<Object> task) {
                 if (task.isSuccessful()) {
                     List<Document> result = (List<Document>) task.getResult(); // Document is a mongo class
                     List<String> locations = new ArrayList<String>();
                     for ( Document loc : result) {
-                        Integer locationInt = (Integer) loc.get("location");
-                        locations.add(Constants.locations.get(locationInt));
+                        locations.add((String) loc.get("stringName"));
                     }
                     populateDropdown(locations);
                 }
@@ -125,6 +140,9 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
     private void selectItem(Object obj) { this.itemSelected = obj; }
 
     public void returnBike(View view) {
+        if (this.itemSelected == null) { // TODO: display error message here
+            return;
+        }
         try {
             IMqttToken token = this.mqttClient.connect(); // completes async, so need to set a cb
             token.setActionCallback(new IMqttActionListener() {
@@ -154,7 +172,7 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
         }
 
         String locationName = (String) this.itemSelected;
-        Integer locInt = Constants.invLocations.get(locationName);
+        Integer locInt = Constants.invLocations.get(locationName); // TODO: make sure matching
         String topicName = "bikeshare/" + locInt.toString();
 
         try {

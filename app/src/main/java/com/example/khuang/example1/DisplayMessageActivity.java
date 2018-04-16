@@ -52,9 +52,13 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
             this.stitchClient.executeFunction("getUser", this.userId).addOnCompleteListener(new OnCompleteListener<Object>() {
                 public void onComplete(@NonNull Task<Object> task) {
                     if (task.isSuccessful()) {
-                        Document doc = (Document) task.getResult();
-                        User.makeUserFromDoc(doc);
-                        setUser();
+                        try {
+                            Document doc = (Document) task.getResult();
+                            User.makeUserFromDoc(doc);
+                            setUser();
+                        } catch(ClassCastException e) {
+
+                        }
                     }
                     else { Exception e = task.getException(); }
                 }
@@ -76,18 +80,20 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
     public void returnBike(View view) {
         if (this.user != null && this.user.isBikeInUse()) {
             Intent intent = new Intent(this, ReturnBikeActivity.class);
-            intent.putExtra(Constants.EXTRA_MESSAGE, userId);
             startActivity(intent);
         } else { // this will be triggered if the user is null OR the user doesn't have a bike checked out.
-            // TODO: put a warning message here.
             TextView returnErrorMsg = findViewById(R.id.return_error);
             returnErrorMsg.setVisibility(View.VISIBLE);
         }
     }
 
     public void reserveBike(View view) {
-        Intent intent = new Intent(this, ReserveBikeActivity.class);
-        intent.putExtra(Constants.EXTRA_MESSAGE, userId);
-        startActivity(intent);
+        if (this.user != null && !this.user.isBikeInUse()) {
+            Intent intent = new Intent(this, ReserveBikeActivity.class);
+            startActivity(intent);
+        } else {
+            TextView returnErrorMsg = findViewById(R.id.return_error);
+            returnErrorMsg.setVisibility(View.VISIBLE);
+        }
     }
 }

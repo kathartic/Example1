@@ -16,9 +16,7 @@ public final class Constants {
 
     public static final String HOSTNAME = "tcp://130.58.167.93:1883";
     public static final int QOS = 1;
-    public static final byte[] QUERY = {0};
     public static final byte[] UNLOCK = {1};
-    public static final byte[] LOCK = {2};
     public static final String EXTRA_MESSAGE = "com.example.bikeshare.MESSAGE";
 
     private static final HashMap<Integer, String> locationMap = new HashMap<Integer, String>() {{
