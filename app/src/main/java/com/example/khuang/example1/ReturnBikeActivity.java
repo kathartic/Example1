@@ -1,8 +1,11 @@
 package com.example.khuang.example1;
 
+import android.content.Intent;
+import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -30,18 +33,18 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
     private StitchClient stitchClient;
     private final String clientId = MqttClient.generateClientId();
     private Object itemSelected = null;
+    private static String userId = "";
+    private User user;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_return_bike);
 
-        // TODO: change this to a useful message
-        String message = "You currently have 0 minutes remaining.";
+        Intent intent = getIntent();
+        userId = intent.getStringExtra(Constants.EXTRA_MESSAGE);
 
-        // Capture the layout's TextView and set the string as its text
-        TextView textView = findViewById(R.id.bike_time_remaining);
-        textView.setText(message);
+        this.user = User.getUser(); // TODO: what if this is null, asshole?
 
         // create mqtt client
         this.mqttClient = new MqttAndroidClient(this.getApplicationContext(), Constants.HOSTNAME,
@@ -64,9 +67,15 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
                     else { Exception e = task.getException(); }
                 }
             });
-        } else {
-            getLocations();
+        } else { getLocations(); }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish(); // do this to preserve the userId from prev screen.
         }
+        return true;
     }
 
     private void getLocations() {
@@ -82,7 +91,11 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
                     }
                     populateDropdown(locations);
                 }
-                else { Exception e = task.getException(); }
+                else {
+                    // Exception e = task.getException();
+                    TextView returnErrorMsg = findViewById(R.id.return_server_error);
+                    returnErrorMsg.setVisibility(View.VISIBLE);
+                }
             }
         });
     }
@@ -92,9 +105,6 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
         Spinner spinner = (Spinner) findViewById(R.id.spinner);
 
         // Create an ArrayAdapter using the string array and a default spinner layout
-        // ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-         //       R.array.return_locations, android.R.layout.simple_spinner_item);
-
         ArrayAdapter adapter = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, locs);
 
         // Apply the adapter to the spinner
@@ -102,56 +112,25 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                // adapterView.getItemAtPosition(i) should give you the thing user selected.
-                itemSelected = adapterView.getItemAtPosition(i);
+                selectItem(adapterView.getItemAtPosition(i));
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-                // do nothing?
+                // TODO: do you maybe want to do something?
             }
         });
     }
 
-    // does: upon connection, subscribes to the confirmations topic, then immediately
-    // goes to publish.
-    private IMqttActionListener returnAction = new IMqttActionListener() {
-        @Override
-        public void onSuccess(IMqttToken asyncActionToken) {
-            if (mqttClient.isConnected()) { publishReturn(); }
-        }
-
-        @Override
-        public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-            TextView returnErrorMsg = findViewById(R.id.return_server_error);
-            returnErrorMsg.setVisibility(View.VISIBLE);
-        }
-    };
+    private void selectItem(Object obj) { this.itemSelected = obj; }
 
     public void returnBike(View view) {
-        // TODO: use mqtt protocol to return the bike.
         try {
             IMqttToken token = this.mqttClient.connect(); // completes async, so need to set a cb
-            token.setActionCallback(returnAction);
-        } catch (MqttException e) {
-            e.printStackTrace();
-            TextView returnErrorMsg = findViewById(R.id.return_server_error);
-            returnErrorMsg.setVisibility(View.VISIBLE);
-        }
-    }
-
-    private void publishReturn() {
-        // TODO: we should publish the return based on which location was selected.
-        String topicName = "bikeshare/1";
-        try {
-            // qos = 2 ensures delivery (slow), retained --> broker will retain it
-            IMqttDeliveryToken token = this.mqttClient.publish(topicName,
-                    Constants.LOCK, Constants.QOS, true);
-            token.setActionCallback(new IMqttActionListener() { // tokens are async, so set cb
+            token.setActionCallback(new IMqttActionListener() {
                 @Override
                 public void onSuccess(IMqttToken asyncActionToken) {
-                    TextView returnErrorMsg = findViewById(R.id.return_success_msg);
-                    returnErrorMsg.setVisibility(View.VISIBLE);
+                    publishReturn();
                 }
 
                 @Override
@@ -165,5 +144,59 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
             TextView returnErrorMsg = findViewById(R.id.return_server_error);
             returnErrorMsg.setVisibility(View.VISIBLE);
         }
+    }
+
+    private void publishReturn() {
+        if (!this.mqttClient.isConnected()) { // if it's not connected, error.
+            TextView returnErrorMsg = findViewById(R.id.return_server_error);
+            returnErrorMsg.setVisibility(View.VISIBLE);
+            return;
+        }
+
+        String locationName = (String) this.itemSelected;
+        Integer locInt = Constants.invLocations.get(locationName);
+        String topicName = "bikeshare/" + locInt.toString();
+
+        try {
+            String[] bikeId = this.user.getBikeId().split(" ");
+            byte[] byteArray = stringArrayToByteArray(bikeId);
+            IMqttDeliveryToken token = this.mqttClient.publish(topicName,
+                    byteArray, Constants.QOS, true);
+            token.setActionCallback(new IMqttActionListener() { // tokens are async, so set cb
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    TextView returnSuccessMsg = findViewById(R.id.return_success_msg);
+                    returnSuccessMsg.setVisibility(View.VISIBLE);
+                    final Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() { // close this activity after 5 seconds, after publish success
+                        @Override
+                        public void run() { finish(); }
+                    }, 5000);
+                }
+
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    TextView returnErrorMsg = findViewById(R.id.return_server_error);
+                    returnErrorMsg.setVisibility(View.VISIBLE);
+                }
+            });
+        } catch (MqttException | NullPointerException e) {
+            e.printStackTrace();
+            TextView returnErrorMsg = findViewById(R.id.return_server_error);
+            returnErrorMsg.setVisibility(View.VISIBLE);
+        }
+    }
+
+    // Returns the actual value of the byte. for example, "f" --> 15,
+    // "fe" --> "1111 1110" in binary. sweet casting hell
+    // TODO: test that it actually sends the correct byte array.
+    private byte[] stringArrayToByteArray(String[] s_array) {
+        byte byteArray[] = new byte[s_array.length];
+        for (int i = 0; i < s_array.length; i++) {
+            Integer returnVal = Integer.parseInt(s_array[i], 16);
+            int returnIntVal = (int) returnVal;
+            byteArray[i] = (byte) returnIntVal;
+        }
+        return byteArray;
     }
 }

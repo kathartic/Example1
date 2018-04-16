@@ -9,6 +9,7 @@
     <string name="welcome_message">What would you like to do today?</string>
     <string name="return_bike">Return</string>
     <string name="reserve_bike">Reserve</string>
+    <string name="return_error">You don\'t currently have a bike checked out.</string>
 
     <!-- return bike page -->
     <string name="return_where">Where are you returning?</string>
@@ -17,7 +18,7 @@
         <item>Home</item>
     </string-array>
     <string name="return_server_error">There was an error communicating with the server. Please try again.</string>
-    <string name="return_success">You have 10 seconds.</string>
+    <string name="return_success">You have 10 seconds to return the bike. This screen will now close.</string>
 
     <!-- reserve bike page -->
     <string name="reserve_where">Where would you like to check out a bike?</string>
