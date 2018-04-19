@@ -58,7 +58,10 @@ public class MainActivity extends AppCompatActivity implements StitchClientListe
                         errorIdLengthMsg.setVisibility(View.VISIBLE);
                     }
                 }
-                else { Exception e = task.getException(); }
+                else {
+                    TextView errorIdLengthMsg = findViewById(R.id.error_id_length);
+                    errorIdLengthMsg.setVisibility(View.VISIBLE);
+                }
             }
         });
     }

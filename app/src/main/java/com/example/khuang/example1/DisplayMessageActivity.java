@@ -70,7 +70,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
 
     private void setUser() {
         this.user = User.getUser();
-        String message = "Welcome, " + this.user.getName();
+        String message = "Welcome, " + this.user.getFirstName();
 
         // Capture the layout's TextView and set the string as its text
         TextView textView = findViewById(R.id.textView);
@@ -80,7 +80,7 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
     public void returnBike(View view) {
         if (this.user != null && this.user.isBikeInUse()) {
             Intent intent = new Intent(this, ReturnBikeActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, Constants.RETURN_BIKE_REQUEST);
         } else { // this will be triggered if the user is null OR the user doesn't have a bike checked out.
             TextView returnErrorMsg = findViewById(R.id.return_error);
             returnErrorMsg.setVisibility(View.VISIBLE);
@@ -90,10 +90,19 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
     public void reserveBike(View view) {
         if (this.user != null && !this.user.isBikeInUse()) {
             Intent intent = new Intent(this, ReserveBikeActivity.class);
-            startActivity(intent);
+            startActivityForResult(intent, Constants.RESERVE_BIKE_REQUEST);
         } else {
             TextView returnErrorMsg = findViewById(R.id.return_error);
             returnErrorMsg.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (requestCode == Constants.RESERVE_BIKE_REQUEST) {
+            this.user = User.getUser();
+        } else if (requestCode == Constants.RETURN_BIKE_REQUEST) {
+            // TODO: stuffs
         }
     }
 }

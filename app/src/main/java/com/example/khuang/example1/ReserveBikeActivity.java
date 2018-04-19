@@ -25,6 +25,7 @@ import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttException;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class ReserveBikeActivity extends AppCompatActivity implements StitchClientListener{
@@ -33,6 +34,7 @@ public class ReserveBikeActivity extends AppCompatActivity implements StitchClie
     private Object itemSelected = null;
     private MqttAndroidClient mqttClient;
     private final String clientId = MqttClient.generateClientId();
+    private HashMap<Integer, String> locationsToBikeIds = new HashMap<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -77,12 +79,15 @@ public class ReserveBikeActivity extends AppCompatActivity implements StitchClie
             @Override
             public void onComplete(@NonNull Task<Object> task) {
                 if (task.isSuccessful()) {
-                    List<Document> result = (List<Document>) task.getResult(); // Document is a mongo class
-                    List<String> locations = new ArrayList<String>();
-                    for ( Document loc : result) {
-                        locations.add((String) loc.get("stringName"));
+                    try{
+                        List<Document> result = (List<Document>) task.getResult(); // Document is a mongo class
+                        List<String> locations = getLocationList(result);
+                        populateDropdown(locations);
+                    } catch(ClassCastException e) {
+                        TextView resultMsg = findViewById(R.id.reserve_feedback);
+                        resultMsg.setText(R.string.reserve_failure);
+                        resultMsg.setVisibility(View.VISIBLE);
                     }
-                    populateDropdown(locations);
                 } else {
                     TextView resultMsg = findViewById(R.id.reserve_feedback);
                     resultMsg.setText(R.string.reserve_failure);
@@ -90,6 +95,15 @@ public class ReserveBikeActivity extends AppCompatActivity implements StitchClie
                 }
             }
         });
+    }
+
+    private List<String> getLocationList(List<Document> result) {
+        List<String> locations = new ArrayList<String>();
+        for ( Document loc : result) {
+            locations.add((String) loc.get("stringName"));
+            this.locationsToBikeIds.put((Integer) loc.get("id"), (String) loc.get("bikeId"));
+        }
+        return locations;
     }
 
     private void populateDropdown(List<String> locs) {
@@ -172,7 +186,7 @@ public class ReserveBikeActivity extends AppCompatActivity implements StitchClie
     }
 
     private void updateDbsAndFinish(Integer location) {
-        this.stitchClient.executeFunction("reserveBike", location, this.user.getUid()).addOnCompleteListener(new OnCompleteListener<Object>() {
+        this.stitchClient.executeFunction("reserveBike", location, this.user.getUid(), this.locationsToBikeIds.get(location)).addOnCompleteListener(new OnCompleteListener<Object>() {
             @Override
             public void onComplete(@NonNull Task<Object> task) {
                 refreshUserAndFinish();

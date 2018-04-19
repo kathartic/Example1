@@ -9,7 +9,8 @@ import org.bson.Document;
 // object that represents user, corresponds to fields in db
 public class User {
 
-    private String name;
+    private String firstName;
+    private String lastName;
     private String uid;
     private String bikeId;
     private boolean bikeInUse;
@@ -26,16 +27,21 @@ public class User {
     // method to make user from bson doc
     public static void makeUserFromDoc(Document doc) {
         user = new User((String) doc.get("uid"));
-        user.name = (String) doc.get("name");
+        user.firstName = (String) doc.get("firstName");
+        user.lastName = (String) doc.get("lastName");
         user.bikeInUse = (boolean) doc.get("bikeInUse");
         user.bikeId = (String) doc.get("bikeId");
         user.points = (Integer) doc.get("points");
-        user.fines = (Integer) doc.get("fines");
+        user.fines = (Integer) doc.get("fine");
     }
 
-    public String getName() { return name; }
+    public String getFirstName() { return firstName; }
 
-    public void setName(String name) { this.name = name; }
+    public void setFirstName(String name) { this.firstName = name; }
+
+    public String getLastName() { return lastName; }
+
+    public void setLastName(String name) { this.lastName = name; }
 
     public String getUid() { return uid; }
 
