@@ -209,7 +209,7 @@ public class ReserveBikeActivity extends AppCompatActivity implements StitchClie
                         final Handler handler = new Handler();
                         handler.postDelayed(new Runnable() { // close this activity after 5 seconds, after publish success
                             @Override
-                            public void run() { finish(); }
+                            public void run() { closeAllConnections(); }
                         }, 5000);
                     } else {
                         resultMsg.setText(R.string.reserve_failure);
@@ -226,5 +226,15 @@ public class ReserveBikeActivity extends AppCompatActivity implements StitchClie
 
     private void setUser() {
         this.user = User.getUser();
+    }
+
+    private void closeAllConnections() {
+        try {
+            this.mqttClient.disconnect();
+            finish();
+        } catch(MqttException e) {
+            e.printStackTrace();
+        }
+
     }
 }

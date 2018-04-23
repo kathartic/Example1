@@ -101,6 +101,8 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (requestCode == Constants.RESERVE_BIKE_REQUEST) {
             this.user = User.getUser();
+            TextView returnErrorMsg = findViewById(R.id.return_error);
+            returnErrorMsg.setVisibility(View.INVISIBLE);
         } else if (requestCode == Constants.RETURN_BIKE_REQUEST) {
             // TODO: stuffs
         }

@@ -188,7 +188,9 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
                     final Handler handler = new Handler();
                     handler.postDelayed(new Runnable() { // close this activity after 5 seconds, after publish success
                         @Override
-                        public void run() { finish(); }
+                        public void run() {
+                            closeAllConnections();
+                        }
                     }, 5000);
                 }
 
@@ -207,7 +209,6 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
 
     // Returns the actual value of the byte. for example, "f" --> 15,
     // "fe" --> "1111 1110" in binary. sweet casting hell
-    // TODO: test that it actually sends the correct byte array.
     private byte[] stringArrayToByteArray(String[] s_array) {
         byte byteArray[] = new byte[s_array.length];
         for (int i = 0; i < s_array.length; i++) {
@@ -216,5 +217,14 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
             byteArray[i] = (byte) returnIntVal;
         }
         return byteArray;
+    }
+
+    private void closeAllConnections() {
+        try {
+            this.mqttClient.disconnect();
+            finish();
+        } catch(MqttException e) {
+            e.printStackTrace();
+        }
     }
 }
