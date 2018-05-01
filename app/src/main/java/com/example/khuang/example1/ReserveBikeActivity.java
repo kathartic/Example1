@@ -16,6 +16,7 @@ import com.google.android.gms.tasks.Task;
 import com.mongodb.stitch.android.StitchClient;
 import com.mongodb.stitch.android.auth.anonymous.AnonymousAuthProvider;
 
+import org.apache.commons.lang3.ObjectUtils;
 import org.bson.Document;
 import org.eclipse.paho.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
@@ -232,7 +233,7 @@ public class ReserveBikeActivity extends AppCompatActivity implements StitchClie
         try {
             this.mqttClient.disconnect();
             finish();
-        } catch(MqttException e) {
+        } catch(MqttException | NullPointerException e) {
             e.printStackTrace();
         }
 

@@ -9,9 +9,13 @@
     <string name="welcome_message">What would you like to do today?</string>
     <string name="return_bike">Return</string>
     <string name="reserve_bike">Reserve</string>
+    <string name="user_status">Status</string>
     <string name="return_error">You don\'t currently have a bike checked out.</string>
+    <string name="reserve_error">You already have a bike checked out.</string>
+    <string name="status_error">There\'s an error with the app. Please sign in again.</string>
 
     <!-- return bike page -->
+    <string name="return_instructions">To return, insert with cut-out facing down.</string>
     <string name="return_where">Where are you returning?</string>
     <string name="return_confirmed">Return now</string>
     <string name="return_server_error">There was an error communicating with the server. Please try again.</string>
@@ -23,4 +27,9 @@
     <string name="reserve_success">The lock will unlock for 10 seconds. This screen will now close.</string>
     <string name="reserve_failure">There is an error with the database. Please try later.</string>
     <string name="reserve_failure_mqtt">There is an error with the network. Please try again later.</string>
+
+    <!-- check status page -->
+    <string name="check_status_error">There was an error fetching user status.</string>
+    <string name="check_bike_status_true">Bike is currently checked out.</string>
+    <string name="check_bike_status_false">No bike is currently checked out.</string>
 </resources>

@@ -68,6 +68,7 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
+            if (this.mqttClient == null) { finish(); }
             try {
                 IMqttToken token = this.mqttClient.disconnect();
                 token.setActionCallback(new IMqttActionListener() {
@@ -92,7 +93,9 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
         return true;
     }
 
-    private void closeMqttClient() { this.mqttClient.close(); }
+    private void closeMqttClient() {
+        if (this.mqttClient != null) { this.mqttClient.close(); }
+    }
 
     private void getLocations() {
         this.stitchClient.executeFunction("queryEmptyLocs", "0").addOnCompleteListener(new OnCompleteListener<Object>() {
@@ -223,7 +226,7 @@ public class ReturnBikeActivity extends AppCompatActivity implements StitchClien
         try {
             this.mqttClient.disconnect();
             finish();
-        } catch(MqttException e) {
+        } catch(MqttException | NullPointerException e) {
             e.printStackTrace();
         }
     }

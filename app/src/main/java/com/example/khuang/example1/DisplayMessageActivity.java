@@ -57,15 +57,13 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
                             User.makeUserFromDoc(doc);
                             setUser();
                         } catch(ClassCastException e) {
-
+                            e.printStackTrace();
                         }
                     }
                     else { Exception e = task.getException(); }
                 }
             });
-        } else {
-            setUser();
-        }
+        } else { setUser(); }
     }
 
     private void setUser() {
@@ -82,8 +80,9 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
             Intent intent = new Intent(this, ReturnBikeActivity.class);
             startActivityForResult(intent, Constants.RETURN_BIKE_REQUEST);
         } else { // this will be triggered if the user is null OR the user doesn't have a bike checked out.
-            TextView returnErrorMsg = findViewById(R.id.return_error);
-            returnErrorMsg.setVisibility(View.VISIBLE);
+            TextView errorText = findViewById(R.id.error_text);
+            errorText.setText(R.string.return_error);
+            errorText.setVisibility(View.VISIBLE);
         }
     }
 
@@ -92,19 +91,31 @@ public class DisplayMessageActivity extends AppCompatActivity implements StitchC
             Intent intent = new Intent(this, ReserveBikeActivity.class);
             startActivityForResult(intent, Constants.RESERVE_BIKE_REQUEST);
         } else {
-            TextView returnErrorMsg = findViewById(R.id.return_error);
-            returnErrorMsg.setVisibility(View.VISIBLE);
+            TextView errorText = findViewById(R.id.error_text);
+            errorText.setText(R.string.reserve_error);
+            errorText.setVisibility(View.VISIBLE);
+        }
+    }
+
+    public void checkStatus(View view) {
+        if (this.user != null) {
+            Intent intent = new Intent(this, CheckStatusActivity.class);
+            startActivityForResult(intent, Constants.CHECK_STATUS_REQUEST);
+        } else {
+            TextView errorText = findViewById(R.id.error_text);
+            errorText.setText(R.string.status_error);
+            errorText.setVisibility(View.VISIBLE);
         }
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == Constants.RESERVE_BIKE_REQUEST) {
+        if (requestCode == Constants.RESERVE_BIKE_REQUEST || requestCode == Constants.CHECK_STATUS_REQUEST) {
             this.user = User.getUser();
-            TextView returnErrorMsg = findViewById(R.id.return_error);
-            returnErrorMsg.setVisibility(View.INVISIBLE);
         } else if (requestCode == Constants.RETURN_BIKE_REQUEST) {
             // TODO: stuffs
         }
+        TextView errorText = findViewById(R.id.error_text);
+        errorText.setVisibility(View.INVISIBLE);
     }
 }

@@ -33,7 +33,6 @@
         <activity
             android:name=".ReturnBikeActivity"
             android:parentActivityName=".DisplayMessageActivity">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".DisplayMessageActivity" />
@@ -46,10 +45,16 @@
         <activity
             android:name=".ReserveBikeActivity"
             android:parentActivityName=".DisplayMessageActivity">
-
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".DisplayMessageActivity" />
+        </activity>
+        <activity
+            android:name=".CheckStatusActivity"
+            android:parentActivityName=".DisplayMessageActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".DisplayMessageActivity"/>
         </activity>
     </application>
 

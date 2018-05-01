@@ -21,6 +21,7 @@ final class Constants {
 
     static final int RESERVE_BIKE_REQUEST = 0;
     static final int RETURN_BIKE_REQUEST = 1;
+    static final int CHECK_STATUS_REQUEST = 2;
 
     private static final HashMap<Integer, String> locationMap = new HashMap<Integer, String>() {{
         put(1, "Mary Lyons 1");
